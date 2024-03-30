@@ -44,8 +44,7 @@
 #if defined(WIN32)
 #define WINVER 0x0500
 #include <windows.h>
-#include <ntstatus.h>
-#include <bcrypt.h>
+#include <wincrypt.h>
 #include <process.h>
 #define ALREADY_HAVE_STRUCT_TIMEVAL 1
 #ifndef __MINGW32__
@@ -58,9 +57,6 @@ typedef unsigned int pid_t;
 static size_t read(int d, void* p, size_t n) { return 0; }
 static void close(int d) { return; }
 #endif
-#endif
-#ifdef _MSC_VER
-#pragma comment(lib, "bcrypt.lib")
 #endif
 
 /* own headers (part 2/2) */
@@ -143,6 +139,9 @@ prng_rc_t prng_data(prng_t *prng, void *data_ptr, size_t data_len)
     size_t md5_len;
     int retries;
     int i;
+#if defined(WIN32)
+    HCRYPTPROV hProv;
+#endif
 
     /* sanity check argument(s) */
     if (prng == NULL || data_len == 0)
@@ -169,8 +168,8 @@ prng_rc_t prng_data(prng_t *prng, void *data_ptr, size_t data_len)
     }
 #if defined(WIN32)
     else {
-        if (BCryptGenRandom(NULL, p, n, BCRYPT_USE_SYSTEM_PREFERRED_RNG) == STATUS_SUCCESS)
-            n = 0;
+        if (CryptAcquireContext(&hProv, NULL, NULL, PROV_RSA_FULL, 0))
+            CryptGenRandom(hProv, n, p);
     }
 #endif
 
