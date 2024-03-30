@@ -48,6 +48,7 @@
 #include <bcrypt.h>
 #include <process.h>
 #define ALREADY_HAVE_STRUCT_TIMEVAL 1
+#ifndef __MINGW32__
 typedef unsigned int pid_t;
 
 // Dummy implementations of read() & close()
@@ -56,6 +57,7 @@ typedef unsigned int pid_t;
 // on a win32 platform.
 static size_t read(int d, void* p, size_t n) { return 0; }
 static void close(int d) { return; }
+#endif
 #endif
 #ifdef _MSC_VER
 #pragma comment(lib, "bcrypt.lib")
